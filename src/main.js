@@ -8,6 +8,12 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+app.get('/addg', (req, res) => {
+    let a = parseInt(req.query.a)
+    let b = parseInt(req.query.b)
+    res.send(' ' + (a + b))
+  })
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
