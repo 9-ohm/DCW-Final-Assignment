@@ -3,9 +3,23 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const axios = require('axios')
 const app = express()
-const port = 3000
+const jwt = require("jsonwebtoken")
+const port = 8080
 
-const TOKEN_SECRET = '62378da13d281d6e1cf0c59440af4e660d079107487237677ec570c11c2415310e1d9fde642e31d0aaaa71ff495a14936d851b0c358abd07c5f9d0703ebea5f4'
+const TOKEN_SECRET = '26940dd014d5bfe15e9b9f1a9e6441471cd018786ebbc0406f26cb3033f1c1b04b55726f045b44630140d2161ab0131f4da7c1b506d7df81e866e0eb8b625ab1'
+
+const authenticated = (req, res, next)=>{
+  const auth_header = req.headers['authorization']
+  const token = auth_header && auth_header.split(' ')[1]
+  console.log(token)
+  if(!token)
+    return res.sendStatus(401)
+  jwt.verify(token, TOKEN_SECRET, (err, info) => {
+    if(err) return res.sendStatus(403)
+    req.username = info.username
+    next()
+  })
+}
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
@@ -13,6 +27,10 @@ app.get('/', (req, res) => {
 
 
 app.use(cors())
+
+app.get('/api/info', authenticated, (req, res)=>{
+  res.send({ok: 1,username: req.username})
+})
 
 app.post('/api/login', bodyParser.json(), async (req, res)=>{
     let token = req.body.token
