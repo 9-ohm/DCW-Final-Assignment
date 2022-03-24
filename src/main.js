@@ -1,7 +1,25 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const winston = require('winston');
+const expressWinston = require('express-winston');
 const app = express()
-//const port = 3000
+const port = 3001
+
+
+app.use(expressWinston.logger({
+  transports: [
+    new winston.transports.Console()
+  ],
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.json()
+  ),
+  meta: false,
+  msg: "HTTP  ",
+  expressFormat: true,
+  colorize: false,
+  ignoreRoute: function (req, res) { return false; }
+}));
 
 app.use(bodyParser.urlencoded({extended: false}))
 app.use('/static', express.static('public'))
