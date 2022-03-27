@@ -32,6 +32,15 @@ app.get('/api/info', authenticated, (req, res)=>{
   res.send({ok: 1,username: req.username})
 })
 
+//connection to mysql database
+let dbCon = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: ' ',
+  database:  'node_api'
+})
+dbCon.connect();
+
 app.post('/api/login', bodyParser.json(), async (req, res)=>{
     let token = req.body.token
     let result = await axios.get('https://graph.facebook.com/me',{
