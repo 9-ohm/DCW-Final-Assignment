@@ -25,6 +25,20 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+app.use(expressWinston.logger({
+  transports: [
+    new winston.transports.Console()
+  ],
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.json()
+  ),
+  meta: false,
+  msg: "HTTP  ",
+  expressFormat: true,
+  colorize: false,
+  ignoreRoute: function (req, res) { return false; }
+}));
 
 app.use(cors())
 
