@@ -4,9 +4,16 @@ const cors = require('cors')
 const axios = require('axios')
 const app = express()
 const jwt = require("jsonwebtoken")
-const port = 8080
+const { required } = require('nodemon/lib/config')
+const winston = require('winston')
+const expressWinston = require('express-winston')
+const mysql = require('mysql')
+const { SELECT } = require('sequelize/types/query-types')
+const port = 3000
+
 
 const TOKEN_SECRET = '26940dd014d5bfe15e9b9f1a9e6441471cd018786ebbc0406f26cb3033f1c1b04b55726f045b44630140d2161ab0131f4da7c1b506d7df81e866e0eb8b625ab1'
+
 
 const authenticated = (req, res, next)=>{
   const auth_header = req.headers['authorization']
@@ -21,9 +28,14 @@ const authenticated = (req, res, next)=>{
   })
 }
 
+//homepage
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Welcome')
 })
+
+//app.listen(port, () => {
+//  console.log('running on port' + port)
+//})
 
 app.use(expressWinston.logger({
   transports: [
@@ -50,11 +62,24 @@ app.get('/api/info', authenticated, (req, res)=>{
 let dbCon = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: ' ',
-  database:  'node_api'
+  password: '',
+  database:  'staff'
 })
 dbCon.connect();
 
+app.get('/staffs',(req, res) => {
+  dbCon.query('SELECT * FROM staffs',(error, results, fields)=>{
+    if(error) throw error
+
+    let massage =""
+    if(results == undefined || results.length == 0){
+      massage = "Staff table is empty"
+    }else {
+      massage = "Successful retrieved all staff"
+    }
+    res.send({error: false, data: results, message: massage})
+  })
+})
 app.post('/api/login', bodyParser.json(), async (req, res)=>{
     let token = req.body.token
     let result = await axios.get('https://graph.facebook.com/me',{
