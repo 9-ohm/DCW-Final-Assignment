@@ -36,10 +36,6 @@ app.get('/', (req, res) => {
   res.send('Welcome')
 })
 
-//app.listen(port, () => {
-//  console.log('running on port' + port)
-//})
-
 app.use(expressWinston.logger({
   transports: [
     new winston.transports.Console()
