@@ -8,7 +8,6 @@ const { required } = require('nodemon/lib/config')
 const winston = require('winston')
 const expressWinston = require('express-winston')
 const mysql = require('mysql')
-const { SELECT } = require('sequelize/types/query-types')
 const port = 3000
 
 
@@ -27,6 +26,9 @@ const authenticated = (req, res, next)=>{
     next()
   })
 }
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended : true}))
 
 //homepage
 app.get('/', (req, res) => {
@@ -67,6 +69,7 @@ let dbCon = mysql.createConnection({
 })
 dbCon.connect();
 
+//get staffs
 app.get('/staffs',(req, res) => {
   dbCon.query('SELECT * FROM staffs',(error, results, fields)=>{
     if(error) throw error
@@ -80,6 +83,23 @@ app.get('/staffs',(req, res) => {
     res.send({error: false, data: results, message: massage})
   })
 })
+
+//add staff
+app.post('/staff',(req, res) => {
+  let name = req.body.name;
+  let team = req.body.team;
+
+  if(!name || !team){
+    res.status(400).send({message : "Please input all info."})
+  }else{
+    dbCon.query('INSERT INTO staffs (name, team) VALUES(?,?)', [name, team],(error,results,fields)=>{
+      if(error) throw error;
+      return res.send({ error: false, data: results, message: "Staff successfully added"})
+    })
+  }
+
+})
+
 app.post('/api/login', bodyParser.json(), async (req, res)=>{
     let token = req.body.token
     let result = await axios.get('https://graph.facebook.com/me',{
