@@ -8,6 +8,7 @@ const { required } = require('nodemon/lib/config')
 const winston = require('winston')
 const expressWinston = require('express-winston')
 const mysql = require('mysql')
+const res = require('express/lib/response')
 const port = 3000
 
 
@@ -69,13 +70,13 @@ let dbCon = mysql.createConnection({
 })
 dbCon.connect();
 
-//get staffs
+//get all staffs
 app.get('/staffs',(req, res) => {
   dbCon.query('SELECT * FROM staffs',(error, results, fields)=>{
     if(error) throw error
 
     let massage =""
-    if(results == undefined || results.length == 0){
+    if(results === undefined || results.length == 0){
       massage = "Staff table is empty"
     }else {
       massage = "Successful retrieved all staff"
@@ -98,6 +99,50 @@ app.post('/staff',(req, res) => {
     })
   }
 
+})
+
+//get staff by id
+app.get('/staff/:id', (req, res)=>{
+  let id = req.params.id;
+
+  if(!id){
+    res.status(400).send({ error: true, message: "Please input staff id"})
+  }else {
+    dbCon.query("SELECT * FROM staffs WHERE id = ?", id, (error, results, fields) => {
+      if(error) throw error;
+
+      let message = "";
+      if(results === undefined || results.length == 0){
+        message = "Staff not found"
+      }else {
+        message = "Successfully get staff data"
+      }
+
+      res.send({error: false, data: results[0], massage: message})
+    })
+  }
+})
+
+//delete staff by id
+app.delete('/staff',(req,res)=>{
+  let id = req.body.id
+  
+  if(!id){
+    res.status(400).send({ error: true, message: "Please input staff id"})
+  } else {
+    dbCon.query('DELETE FROM staffs WHERE id = ?',[id],(error, results, fields)=>{
+      if(error) throw error
+
+      let message = "";
+      if(results.affectedRows === 0 ){
+        message = "Staff not found";
+      }else {
+        message = "Staff sussessfuly deleted "
+      }
+
+      res.send({error: false, data: results, message: message})
+    })
+  }
 })
 
 app.post('/api/login', bodyParser.json(), async (req, res)=>{
