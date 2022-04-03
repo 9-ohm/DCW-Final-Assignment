@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
   res.send('Welcome')
 })
 
-app.use(expressWinston.logger({
+/*app.use(expressWinston.logger({
   transports: [
     new winston.transports.Console()
   ],
@@ -72,9 +72,22 @@ app.use(expressWinston.logger({
   expressFormat: true,
   colorize: false,
   ignoreRoute: function (req, res) { return false; }
-}));
+}));*/
 
 app.use(cors())
+
+const authenticated = (req, res, next)=>{
+  const auth_header = req.headers['authorization']
+  const token = auth_header && auth_header.split(' ')[1]
+  console.log(token)
+  if(!token)
+    return res.sendStatus(401)
+  jwt.verify(token, TOKEN_SECRET, (err, info) => {
+    if(err) return res.sendStatus(403)
+    req.username = info.username
+    next()
+  })
+}
 
 app.get('/api/info', authenticated, (req, res)=>{
   res.send({ok: 1,username: req.username})
@@ -117,11 +130,12 @@ app.get('/staffs',(req, res) => {
 
     let massage =""
     if(results === undefined || results.length == 0){
-      massage = "Staff table is empty"
+      logger.warn('Staff table is empty');
     }else {
-      massage = "Successful retrieved all staff"
+      logger.info('Successful get all staff');
     }
-    res.send({error: false, data: results, message: massage})
+    
+    res.send({error: false, data: results})
   })
 })
 
@@ -132,71 +146,31 @@ app.post('/staff',(req, res) => {
 
   if(!name || !team){
     res.status(400).send({message : "Please input all info."})
+    logger.error("Incomplete information");
   }else{
     dbCon.query('INSERT INTO staffs (name, team) VALUES(?,?)', [name, team],(error,results,fields)=>{
       if(error) throw error;
-      return res.send({ error: false, data: results, message: "Staff successfully added"})
+
+      logger.info("sussessfuly added");
+
+      return res.send({ error: false, data: results, message: "successfully added"})
     })
   }
 
 })
 
-//get staff by id
-app.get('/staff/:id', (req, res)=>{
-  let id = req.params.id;
-
-  if(!id){
-    res.status(400).send({ error: true, message: "Please input staff id"})
-  }else {
-    dbCon.query("SELECT * FROM staffs WHERE id = ?", id, (error, results, fields) => {
-      if(error) throw error;
-
-      let message = "";
-      if(results === undefined || results.length == 0){
-        message = "Staff not found"
-      }else {
-        message = "Successfully get staff data"
-      }
-
-      res.send({error: false, data: results[0], massage: message})
-    })
-  }
-})
-
-//delete staff by id
+//delete staff 
 app.delete('/staff/:id',(req,res)=>{
   let id = req.params.id
   
-  if(!id){
-    res.status(400).send({ error: true, message: "Please input staff id"})
-  } else {
     dbCon.query('DELETE FROM staffs WHERE id = ?',[id],(error, results, fields)=>{
       if(error) throw error
 
-      let message = "";
-      if(results.affectedRows === 0 ){
-        message = "Staff not found";
-      }else {
-        message = "Staff sussessfuly deleted "
-      }
-
-      res.send({error: false, data: results, message: message})
+      logger.info("sussessfuly deleted");
+    
+      res.send({error: false, data: results,message: "sussessfuly deleted"})
     })
-  }
 })
-
-const authenticated = (req, res, next)=>{
-  const auth_header = req.headers['authorization']
-  const token = auth_header && auth_header.split(' ')[1]
-  console.log(token)
-  if(!token)
-    return res.sendStatus(401)
-  jwt.verify(token, TOKEN_SECRET, (err, info) => {
-    if(err) return res.sendStatus(403)
-    req.username = info.username
-    next()
-  })
-}
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`)

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import axios from 'axios'
 
-function Oauth() {
+function CallApi() {
     
     const [staffs, setStaffs] = useState([]);
     const [name, setName] = useState([]);
@@ -35,12 +35,12 @@ function Oauth() {
     }
 
     function handleName(e){ 
-        console.log(e.target.value);
+        //console.log(e.target.value);
         setName(e.target.value)
     }
 
     function handleTeam(e){ 
-        console.log(e.target.value);
+        //console.log(e.target.value);
         setTeam(e.target.value)
     }
 
@@ -51,25 +51,32 @@ function Oauth() {
                 Get staff 
             </button>
             </div>
-            <div>    
-            <h3>{"name : "}</h3>
-            <input value={name} onChange={handleName}></input>
-            <input value={team} onChange={handleTeam}></input>
-            <button onClick={addStaff}>
-                Add staff 
-            </button>
+            <div>
+                <h3>
+                    {"name : "}
+                    <input value={name} onChange={handleName}></input>
+                </h3>
             </div>
-            {staffs.map((staff)=>(
+            <div>    
+                <h3>
+                    {"team : "}
+                    <input value={team} onChange={handleTeam}></input>
+                </h3>
+            </div>
+            <div>            
+                <button onClick={addStaff}>
+                    Add staff 
+                </button>
+            </div>
+                {staffs.map((staff)=>(
                 <div>
-                <h1>{staff.name}</h1>
-                <h3>{"team : " + staff.team }</h3>
-                <button onClick={()=>deleteStaff(staff.id)}>
+                    <h3>{"name : " + staff.name }</h3>
+                    <h3>{"team : " + staff.team }</h3>
+                    <button onClick={()=>deleteStaff(staff.id)}>
                     Delete Staff</button>
                 </div>
             ))}
-
-            
         </div>
     );
 }
-export default Oauth
+export default CallApi

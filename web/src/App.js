@@ -1,6 +1,6 @@
 import axios from 'axios';
 import FacebookLogin from 'react-facebook-login';
-import Oauth from './Oauth';
+import CallApi from './CallApi';
  
 const responseFacebook =async (response) => {
   if(response.accesstToken){
@@ -22,7 +22,7 @@ function App() {
         fields="name,email,picture"
         callback={responseFacebook} /> 
     </div>*/
-   <Oauth/>
+   <CallApi/>
   );
 }
 
